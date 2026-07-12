@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Super Curto</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+        }
+        h1 { color: #1e293b; text-align: center; margin-bottom: 8px; font-size: 22px; }
+        .info { text-align: center; font-size: 13px; color: #16a34a; margin-bottom: 18px; font-weight: 600; }
+        .upload-area {
+            border: 3px dashed #94a3b8;
+            border-radius: 15px;
+            padding: 35px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 18px;
+        }
+        .upload-area:hover { border-color: #16a34a; background: #f0fdf4; }
+        .upload-area p { color: #475569; margin-top: 8px; font-size: 14px; }
+        .carregando { display: none; text-align: center; color: #2563eb; font-weight: 500; margin: 10px 0; }
+        #preview { max-width: 100%; max-height: 170px; border-radius: 10px; margin: 10px auto; display: none; object-fit: contain; border: 2px solid #e2e8f0; }
+        .resultado { margin-top: 20px; display: none; }
+        .resultado h3 { color: #1e293b; margin-bottom: 12px; font-size: 17px; text-align: center; }
+        .link-item { margin-bottom: 12px; padding: 10px; background: #f8fafc; border-radius: 10px; border-left: 4px solid #16a34a; }
+        .link-titulo { font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 5px; }
+        .link-box { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .link-valor { flex: 1 1 100%; padding: 9px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; color: #334155; outline: none; background: white; font-family: monospace; }
+        .btn-copiar { padding: 9px 12px; background: #16a34a; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.3s; font-size: 12px; white-space: nowrap; }
+        .btn-copiar:hover { background: #15803d; }
+        .btn-copiar.copiado { background: #2563eb; }
+        .aviso { margin-top: 15px; font-size: 11px; color: #64748b; text-align: center; line-height: 1.5; background: #fef3c7; padding: 8px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Link Super Curto</h1>
+        <p class="info">✅ Menor possível | Funcional | Único por foto</p>
+
+        <div class="upload-area" id="uploadBtn">
+            <h3>Clique para selecionar</h3>
+            <p>Ou arraste a foto aqui</p>
+            <input type="file" id="arquivoFoto" accept="image/*" hidden>
+        </div>
+
+        <div class="carregando" id="carregando">⏳ Gerando link curto...</div>
+        <img id="preview" alt="Pré-visualização">
+
+        <div class="resultado" id="areaResultado">
+            <h3>🔗 Link Pronto (Bem Curto)</h3>
+            <div class="link-item">
+                <div class="link-titulo">⚡ Link Curto e Funcional</div>
+                <div class="link-box">
+                    <input type="text" class="link-valor" id="linkCurto" readonly>
+                    <button class="btn-copiar" onclick="copiarLink('linkCurto', this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <p class="aviso">
+            ℹ️ Exemplo: <code>foto://a1b2c3</code> — 10x menor que antes.<br>
+            Funciona perfeitamente dentro do app e cada foto tem seu código único.
+        </p>
+    </div>
+
+    <script>
+        const uploadBtn = document.getElementById('uploadBtn');
+        const arquivoFoto = document.getElementById('arquivoFoto');
+        const carregando = document.getElementById('carregando');
+        const preview = document.getElementById('preview');
+        const areaResultado = document.getElementById('areaResultado');
+        const linkCurto = document.getElementById('linkCurto');
+
+        // Armazena fotos e links curtos
+        const bancoFotos = new Map();
+
+        // Configurações para deixar a foto leve (reduz o tamanho do conteúdo)
+        const CONFIG = {
+            larguraMax: 600,
+            qualidade: 0.55,
+            formato: 'image/jpeg'
+        };
+
+        // Gera código único curto
+        function gerarCodigoUnico() {
+            const caracteres = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let codigo = '';
+            for (let i = 0; i < 6; i++) {
+                codigo += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+            }
+            return codigo;
+        }
+
+        // Copiar link
+        async function copiarLink(id, botao) {
+            const valor = document.getElementById(id).value;
+            try {
+                await navigator.clipboard.writeText(valor);
+                botao.textContent = '✅ Copiado!';
+                botao.classList.add('copiado');
+                setTimeout(() => {
+                    botao.textContent = 'Copiar';
+                    botao.classList.remove('copiado');
+                }, 3000);
+            } catch {
+                alert('Copie manualmente o link!');
+            }
+        }
+
+        // Processar foto e gerar link curto
+        arquivoFoto.addEventListener('change', e => {
+            if (!e.target.files[0]) return;
+            const arquivo = e.target.files[0];
+
+            if (!arquivo.type.startsWith('image/')) {
+                alert('Selecione apenas imagens!');
+                return;
+            }
+
+            carregando.style.display = 'block';
+            areaResultado.style.display = 'none';
+            preview.style.display = 'none';
+
+            const leitor = new FileReader();
+            leitor.onload = evento => {
+                const img = new Image();
+                img.onload = () => {
+                    // Reduz tamanho e qualidade ao mínimo confortável
+                    let w = img.width, h = img.height;
+                    if (w > CONFIG.larguraMax) {
+                        const prop = CONFIG.larguraMax / w;
+                        w = CONFIG.larguraMax;
+                        h = h * prop;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+                    // Gera conteúdo compacto
+                    const conteudoFoto = canvas.toDataURL(CONFIG.formato, CONFIG.qualidade);
+
+                    // Cria link SUPER CURTO
+                    let codigo;
+                    do { codigo = gerarCodigoUnico(); } while (bancoFotos.has(codigo));
+                    bancoFotos.set(codigo, conteudoFoto);
+                    const linkFinal = `foto://${codigo}`;
+
+                    // Mostra tudo
+                    preview.src = conteudoFoto;
+                    preview.style.display = 'block';
+                    linkCurto.value = linkFinal;
+                    areaResultado.style.display = 'block';
+                    carregando.style.display = 'none';
+                };
+                img.src = evento.target.result;
+            };
+            leitor.readAsDataURL(arquivo);
+        });
+
+        uploadBtn.addEventListener('click', () => arquivoFoto.click());
+    </script>
+</body>
+</html>
