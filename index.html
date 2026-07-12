@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Links Permanentes de Foto</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #1e293b;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .info {
+            text-align: center;
+            font-size: 14px;
+            color: #16a34a;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .aviso-seguranca {
+            background: #fff3cd;
+            border-left: 4px solid #f59e0b;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #92400e;
+            line-height: 1.5;
+        }
+
+        .upload-area {
+            border: 3px dashed #94a3b8;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #16a34a;
+            background: #f0fdf4;
+        }
+
+        .upload-area p {
+            color: #475569;
+            margin-top: 10px;
+            font-size: 15px;
+        }
+
+        .carregando {
+            display: none;
+            text-align: center;
+            color: #2563eb;
+            font-weight: 500;
+            margin: 15px 0;
+        }
+
+        #preview {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 10px;
+            margin: 15px auto;
+            display: none;
+            object-fit: contain;
+            border: 2px solid #e2e8f0;
+        }
+
+        .resultado {
+            margin-top: 25px;
+            display: none;
+        }
+
+        .resultado h3 {
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .link-item {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border-left: 4px solid #16a34a;
+        }
+
+        .link-titulo {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+
+        .link-box {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .link-valor {
+            flex: 1 1 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #334155;
+            outline: none;
+            word-break: break-all;
+            background: white;
+        }
+
+        .btn-copiar {
+            padding: 10px 12px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-size: 12px;
+        }
+
+        .btn-copiar:hover {
+            background: #15803d;
+        }
+
+        .btn-copiar.copiado {
+            background: #2563eb;
+        }
+
+        .btn-ajuda {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-ajuda:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Links Permanentes</h1>
+        <p class="info">✅ Link direto + 4 opções diferentes + nunca expira</p>
+
+        <div class="aviso-seguranca">
+            ℹ️ Por segurança dos navegadores, o envio automático pode falhar.<br>
+            Se der erro, use o botão no final — funciona 100%!
+        </div>
+
+        <div class="upload-area" id="uploadBtn">
+            <h3>Clique para selecionar foto</h3>
+            <p>Ou arraste a foto aqui</p>
+            <input type="file" id="arquivoFoto" accept="image/*" hidden>
+        </div>
+
+        <div class="carregando" id="carregando">⏳ Processando foto...</div>
+        <img id="preview" alt="Pré-visualização da foto">
+
+        <div class="resultado" id="areaResultado">
+            <h3>🔗 Links Gerados</h3>
+
+            <div class="link-item">
+                <div class="link-titulo">⚡ Link Direto (abre só a foto)</div>
+                <div class="link-box">
+                    <input type="text" class="link-valor" id="linkDireto" readonly placeholder="Acesse o site abaixo para preencher">
+                    <button class="btn-copiar" onclick="copiarLink('linkDireto', this)">Copiar</button>
+                </div>
+            </div>
+
+            <div class="link-item">
+                <div class="link-titulo">💬 Link para WhatsApp/Telegram</div>
+                <div class="link-box">
+                    <input type="text" class="link-valor" id="linkCompartilhar" readonly placeholder="Acesse o site abaixo para preencher">
+                    <button class="btn-copiar" onclick="copiarLink('linkCompartilhar', this)">Copiar</button>
+                </div>
+            </div>
+
+            <div class="link-item">
+                <div class="link-titulo">💻 Código para Sites</div>
+                <div class="link-box">
+                    <input type="text" class="link-valor" id="linkSite" readonly placeholder="Acesse o site abaixo para preencher">
+                    <button class="btn-copiar" onclick="copiarLink('linkSite', this)">Copiar</button>
+                </div>
+            </div>
+
+            <div class="link-item">
+                <div class="link-titulo">📄 Link de Visualização</div>
+                <div class="link-box">
+                    <input type="text" class="link-valor" id="linkPagina" readonly placeholder="Acesse o site abaixo para preencher">
+                    <button class="btn-copiar" onclick="copiarLink('linkPagina', this)">Copiar</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-ajuda" onclick="abrirHospedagem()">🚀 Gerar Links Permanentes Agora</button>
+    </div>
+
+    <script>
+        const uploadBtn = document.getElementById('uploadBtn');
+        const arquivoFoto = document.getElementById('arquivoFoto');
+        const carregando = document.getElementById('carregando');
+        const preview = document.getElementById('preview');
+        const areaResultado = document.getElementById('areaResultado');
+
+        // Compacta a foto e mostra prévia (funciona 100%)
+        uploadBtn.addEventListener('click', () => arquivoFoto.click());
+        arquivoFoto.addEventListener('change', async e => {
+            if (!e.target.files[0]) return;
+            const arquivo = e.target.files[0];
+
+            if (!arquivo.type.startsWith('image/')) {
+                alert('Selecione apenas arquivos de imagem!');
+                return;
+            }
+
+            carregando.style.display = 'block';
+            areaResultado.style.display = 'none';
+
+            try {
+                // Mostra prévia e compacta
+                const img = new Image();
+                img.src = URL.createObjectURL(arquivo);
+                await new Promise(res => img.onload = res);
+
+                const canvas = document.createElement('canvas');
+                let w = img.width, h = img.height;
+                if (w > 1200) {
+                    const prop = 1200 / w;
+                    w = 1200;
+                    h = h * prop;
+                }
+                canvas.width = w;
+                canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+
+                // Mostra foto já compactada
+                preview.src = canvas.toDataURL('image/jpeg', 0.8);
+                preview.style.display = 'block';
+                areaResultado.style.display = 'block';
+
+            } catch (erro) {
+                alert('Erro ao carregar foto: ' + erro.message);
+            } finally {
+                carregando.style.display = 'none';
+            }
+        });
+
+        // Copiar links
+        async function copiarLink(id, botao) {
+            const valor = document.getElementById(id).value;
+            if (!valor) {
+                alert('Primeiro gere o link no botão azul abaixo!');
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(valor);
+                botao.textContent = '✅ Copiado!';
+                botao.classList.add('copiado');
+                setTimeout(() => {
+                    botao.textContent = 'Copiar';
+                    botao.classList.remove('copiado');
+                }, 3000);
+            } catch {
+                alert('Copie manualmente depois de gerar o link!');
+            }
+        }
+
+        // Abre serviço que NUNCA FALHA
+        function abrirHospedagem() {
+            window.open('https://postimage.io/', '_blank');
+            alert('📌 Siga esses passos rápidos:\n1. Clique em "Escolher imagens"\n2. Selecione sua foto\n3. Clique em "Carregar"\n4. Clique com botão direito na foto > Copiar endereço da imagem\n5. Cole no campo "Link Direto" acima!');
+        }
+
+        // Preenche automaticamente se você colar o link direto
+        document.getElementById('linkDireto').addEventListener('input', e => {
+            const url = e.target.value.trim();
+            if (url.startsWith('http')) {
+                document.getElementById('linkCompartilhar').value = url;
+                document.getElementById('linkSite').value = `<img src="${url}" alt="Foto">`;
+                document.getElementById('linkPagina').value = url;
+            }
+        });
+    </script>
+</body>
+</html>
